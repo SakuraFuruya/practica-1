@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from pedidos.dao.cafedao import ProductoDAO, PedidoDAO
 from pedidos.serializers import ProductoSerializer, PedidoSerializer
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+
 # ==========================================
 # 1. VISTAS WEB (HTML)
 # ==========================================
@@ -23,6 +26,13 @@ def cocina_view(request):
     pedidos = PedidoDAO.obtener_todos()
     return render(request, 'mainvista/cocina.html', {'pedidos': pedidos})
 
+def es_cocina(user):
+    """Verifica si el usuario autenticado pertenece al grupo 'Cocina' o es Staff/Admin"""
+    return user.is_authenticated and (user.groups.filter(name='Cocina').exists() or user.is_staff)
+
+@login_required
+@user_passes_test(es_cocina, login_url='/admin/login/')
+
 def crear_pedido_action(request):
     """Procesa el formulario web de un nuevo pedido"""
     if request.method == 'POST':
@@ -30,6 +40,7 @@ def crear_pedido_action(request):
         producto_id = request.POST.get('producto_id')
         PedidoDAO.crear_pedido_con_producto(cliente_nombre, producto_id)
     return redirect('cocina')
+
 
 def cambiar_estado_action(request, pedido_id):
     """Actualiza el estado de una comanda desde la vista web"""
