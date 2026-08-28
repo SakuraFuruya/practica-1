@@ -15,7 +15,10 @@ class Producto(models.Model):
         ('POSTRE', 'Postre'),
     ]
     nombre = models.CharField(max_length=100)
-    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    # Aquí vamos a crear la relación del Nombre con el precio, la relación del Foreign Key.
+    precio = models.DecimalField(max_digits=6, 
+                                 decimal_places=2,
+                                 validators=[validar_precio_positivo])
     categoria = models.CharField(max_length=10, choices=CATEGORIAS)
     disponible = models.BooleanField(default=True)
 
@@ -33,6 +36,15 @@ class Pedido(models.Model):
         ('ENTREGADO', 'Entregado'),
     ]
     cliente_nombre = models.CharField(max_length=100)
+# Aquí vamos a agreagar la relación.
+    producto = models.ForeignKey(
+        Producto, 
+        on_delete=models.CASCADE, 
+        related_name='pedidos',
+        null=True,
+        blank=True
+    )
+
     fecha = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=15, choices=ESTADOS, default='PENDIENTE')
     total = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
